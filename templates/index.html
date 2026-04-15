@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}ARGUS-IRIS &mdash; Device Overview{% endblock %}
+
+{% block content %}
+<section>
+    <h1>ARGUS-IRIS Device Overview</h1>
+
+    <div class="summary-bar">
+        <article class="stat-card">
+            <h2>Total Devices</h2>
+            <p>{{ stats.total_devices }}</p>
+        </article>
+        <article class="stat-card">
+            <h2>Active Devices</h2>
+            <p>{{ stats.active_devices }}</p>
+        </article>
+        <article class="stat-card">
+            <h2>Total DNS Logs</h2>
+            <p>{{ stats.total_dns_logs }}</p>
+        </article>
+        <article class="stat-card">
+            <h2>Flagged Domains</h2>
+            <p>{{ stats.flagged_count }}</p>
+        </article>
+    </div>
+
+    {% if devices %}
+    <table>
+        <thead>
+            <tr>
+                <th>IP</th>
+                <th>MAC</th>
+                <th>Vendor</th>
+                <th>OS Guess</th>
+                <th>Status</th>
+                <th>First Seen</th>
+                <th>Last Seen</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for device in devices %}
+            <tr>
+                <td><a href="{{ url_for('device_detail', device_id=device.id) }}">{{ device.ip }}</a></td>
+                <td>{{ device.mac }}</td>
+                <td>{{ device.vendor }}</td>
+                <td>{{ device.os_guess }}</td>
+                <td>
+                    {% set status_value = (device.status or "UNKNOWN")|upper %}
+                    {% if status_value == "ACTIVE" %}
+                    <span class="status-active">ACTIVE</span>
+                    {% elif status_value == "STALE" %}
+                    <span class="status-stale">STALE</span>
+                    {% else %}
+                    <span class="status-unknown">UNKNOWN</span>
+                    {% endif %}
+                </td>
+                <td>{{ device.first_seen }}</td>
+                <td>{{ device.last_seen }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No devices found in database.</p>
+    {% endif %}
+</section>
+{% endblock %}

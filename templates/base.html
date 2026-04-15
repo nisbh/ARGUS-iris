@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}ARGUS-IRIS{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    {% block top_nav %}
+    <nav class="top-nav" aria-label="Primary">
+        <a href="{{ url_for('index') }}" class="{% if request.path == url_for('index') %}active{% endif %}">Overview</a>
+        <a href="{{ url_for('report') }}" class="{% if request.path == url_for('report') %}active{% endif %}">Report</a>
+    </nav>
+    {% endblock %}
+
+    <main class="page-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">ARGUS Network Intelligence Framework &mdash; Local Use Only</footer>
+</body>
+</html>

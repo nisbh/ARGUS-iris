@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}ARGUS-IRIS &mdash; Device {{ device.ip }}{% endblock %}
+
+{% block content %}
+<section>
+    <p><a href="{{ url_for('index') }}">Back to Overview</a></p>
+    <h1>Device {{ device.ip }}</h1>
+
+    <h2>Device Info</h2>
+    <table>
+        <tbody>
+            <tr><th>IP</th><td>{{ device.ip }}</td></tr>
+            <tr><th>MAC</th><td>{{ device.mac }}</td></tr>
+            <tr><th>Vendor</th><td>{{ device.vendor }}</td></tr>
+            <tr><th>OS Guess</th><td>{{ device.os_guess }}</td></tr>
+            <tr>
+                <th>Status</th>
+                <td>
+                    {% set status_value = (device.status or "UNKNOWN")|upper %}
+                    {% if status_value == "ACTIVE" %}
+                    <span class="status-active">ACTIVE</span>
+                    {% elif status_value == "STALE" %}
+                    <span class="status-stale">STALE</span>
+                    {% else %}
+                    <span class="status-unknown">UNKNOWN</span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr><th>First Seen</th><td>{{ device.first_seen }}</td></tr>
+            <tr><th>Last Seen</th><td>{{ device.last_seen }}</td></tr>
+        </tbody>
+    </table>
+
+    <h2>DNS Log</h2>
+    {% if dns_logs %}
+    <table>
+        <thead>
+            <tr>
+                <th>Domain</th>
+                <th>Timestamp</th>
+                <th>Flagged</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in dns_logs %}
+            <tr>
+                <td>{{ entry.domain }}</td>
+                <td>{{ entry.timestamp }}</td>
+                <td>
+                    {% if entry.flagged == 1 %}
+                    <span class="flag-yes">⚑ FLAGGED</span>
+                    {% else %}
+                    <span class="flag-no">Clean</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No DNS logs recorded for this device.</p>
+    {% endif %}
+
+    <h2>Sessions</h2>
+    {% if sessions %}
+    <table>
+        <thead>
+            <tr>
+                <th>Start Time</th>
+                <th>End Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in sessions %}
+            <tr>
+                <td>{{ session.start_time }}</td>
+                <td>
+                    {% if not session.end_time %}
+                    <em>Ongoing</em>
+                    {% else %}
+                    {{ session.end_time }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No sessions recorded for this device.</p>
+    {% endif %}
+</section>
+{% endblock %}

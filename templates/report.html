@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}ARGUS &mdash; Disclosure Report{% endblock %}
+{% block body_class %}report-page{% endblock %}
+
+{% block top_nav %}
+<div class="report-back">
+    <a href="{{ url_for('index') }}">Back</a>
+</div>
+{% endblock %}
+
+{% block content %}
+<section>
+    <h1>ARGUS Network Intelligence &mdash; Disclosure Report</h1>
+    <p class="report-generated">Generated: {{ generated_at }}</p>
+
+    <h2>Scan Summary</h2>
+    <table>
+        <tbody>
+            <tr><th>Total Devices Discovered</th><td>{{ stats.total_devices }}</td></tr>
+            <tr><th>Active Devices</th><td>{{ stats.active_devices }}</td></tr>
+            <tr><th>Total DNS Queries Logged</th><td>{{ stats.total_dns_logs }}</td></tr>
+            <tr><th>Flagged Domains</th><td>{{ stats.flagged_count }}</td></tr>
+            <tr><th>Total Sessions</th><td>{{ stats.total_sessions }}</td></tr>
+        </tbody>
+    </table>
+
+    <h2>Flagged Domains</h2>
+    {% if flagged_domains %}
+    <table>
+        <thead>
+            <tr>
+                <th>Domain</th>
+                <th>Timestamp</th>
+                <th>Device IP</th>
+                <th>Device MAC</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in flagged_domains %}
+            <tr>
+                <td>{{ entry.domain }}</td>
+                <td>{{ entry.timestamp }}</td>
+                <td>{{ entry.ip }}</td>
+                <td>{{ entry.mac }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No flagged domains recorded.</p>
+    {% endif %}
+
+    <h2>Session Log</h2>
+    {% if all_sessions %}
+    <table>
+        <thead>
+            <tr>
+                <th>Device IP</th>
+                <th>Device MAC</th>
+                <th>Session Start</th>
+                <th>Session End</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in all_sessions %}
+            <tr>
+                <td>{{ session.ip }}</td>
+                <td>{{ session.mac }}</td>
+                <td>{{ session.start_time }}</td>
+                <td>{% if not session.end_time %}Ongoing{% else %}{{ session.end_time }}{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No sessions recorded.</p>
+    {% endif %}
+
+    <h2>Device Inventory</h2>
+    {% if devices %}
+    <table>
+        <thead>
+            <tr>
+                <th>IP</th>
+                <th>MAC</th>
+                <th>Vendor</th>
+                <th>OS Guess</th>
+                <th>Status</th>
+                <th>First Seen</th>
+                <th>Last Seen</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for device in devices %}
+            <tr>
+                <td>{{ device.ip }}</td>
+                <td>{{ device.mac }}</td>
+                <td>{{ device.vendor }}</td>
+                <td>{{ device.os_guess }}</td>
+                <td>{{ device.status }}</td>
+                <td>{{ device.first_seen }}</td>
+                <td>{{ device.last_seen }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No devices found in database.</p>
+    {% endif %}
+
+    <h2>Methodology</h2>
+    <p><strong>argus-recon:</strong> ARP-based discovery using Scapy, OUI vendor lookup, ICMP liveness probing, and TTL OS fingerprinting.</p>
+    <p><strong>argus-veil:</strong> Bidirectional ARP poisoning for MITM traffic capture, IP forwarding, and session recording.</p>
+    <p><strong>argus-oracle:</strong> DNS sniffing on VPN interface (proton0), domain flagging against a blocklist, and deduplication.</p>
+    <p><strong>argus-iris:</strong> Flask dashboard for data review and disclosure report generation.</p>
+</section>
+{% endblock %}
