@@ -206,19 +206,19 @@ def generate_text_report(db_path, output_path="argus_disclosure_report.txt"):
     lines.append("METHODOLOGY")
     lines.append("-" * 72)
     lines.append(
-        "argus-recon: ARP-based discovery using Scapy, OUI vendor lookup, ICMP "
+        "ARGUS-recon: ARP-based discovery using Scapy, OUI vendor lookup, ICMP "
         "liveness probing, and TTL OS fingerprinting."
     )
     lines.append(
-        "argus-veil: Bidirectional ARP poisoning for MITM traffic capture, IP "
+        "ARGUS-veil: Bidirectional ARP poisoning for MITM traffic capture, IP "
         "forwarding, and session recording."
     )
     lines.append(
-        "argus-oracle: DNS sniffing on VPN interface (proton0), domain flagging "
+        "ARGUS-oracle: DNS sniffing on VPN interface (proton0), domain flagging "
         "against a blocklist, and deduplication."
     )
     lines.append(
-        "argus-iris: Flask dashboard for data review and disclosure report generation."
+        "ARGUS-iris: Flask dashboard for data review and disclosure report generation."
     )
 
     report_text = "\n".join(lines)

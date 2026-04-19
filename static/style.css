@@ -65,8 +65,10 @@ p {
 .header-subtitle {
     margin-top: 0.2rem;
     color: var(--muted);
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
+    font-size: 0.74rem;
+    letter-spacing: 0.05em;
+    line-height: 1.35;
+    max-width: 36rem;
 }
 
 .nav {
@@ -101,6 +103,8 @@ p {
     border: 1px solid var(--border);
     padding: 1rem;
     margin-bottom: 1rem;
+    background: rgba(13, 17, 23, 0.45);
+    transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
 }
 
 .card-title {
@@ -125,6 +129,28 @@ p {
     border: 1px solid var(--border);
     padding: 0.9rem;
     text-align: center;
+    background: rgba(13, 17, 23, 0.35);
+    transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .card:hover {
+        border-color: #2a3643;
+        box-shadow: 0 6px 18px rgba(88, 166, 255, 0.05);
+        background: rgba(22, 27, 34, 0.55);
+    }
+
+    .stat-card:hover {
+        border-color: #334354;
+        box-shadow: 0 6px 14px rgba(88, 166, 255, 0.08);
+        transform: translateY(-1px);
+        background: rgba(22, 27, 34, 0.8);
+    }
+}
+
+.stat-card:focus-within {
+    border-color: #334354;
+    box-shadow: 0 6px 14px rgba(88, 166, 255, 0.08);
 }
 
 .stat-number,
