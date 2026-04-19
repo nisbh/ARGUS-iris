@@ -1,13 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}ARGUS &mdash; Disclosure Report{% endblock %}
-{% block body_class %}report-page{% endblock %}
-
-{% block top_nav %}
-<div class="report-back">
-    <a href="{{ url_for('index') }}">Back</a>
-</div>
-{% endblock %}
+{% block body_class %}report-body{% endblock %}
 
 {% block content %}
 <section>
@@ -25,7 +19,7 @@
         </tbody>
     </table>
 
-    <h2>Flagged Domains</h2>
+    <h2 id="flagged-domains">Flagged Domains</h2>
     {% if flagged_domains %}
     <table>
         <thead>
@@ -109,7 +103,7 @@
     <p class="empty-state">No devices found in database.</p>
     {% endif %}
 
-    <h2>Methodology</h2>
+    <h2 id="methodology">Methodology</h2>
     <p><strong>argus-recon:</strong> ARP-based discovery using Scapy, OUI vendor lookup, ICMP liveness probing, and TTL OS fingerprinting.</p>
     <p><strong>argus-veil:</strong> Bidirectional ARP poisoning for MITM traffic capture, IP forwarding, and session recording.</p>
     <p><strong>argus-oracle:</strong> DNS sniffing on VPN interface (proton0), domain flagging against a blocklist, and deduplication.</p>

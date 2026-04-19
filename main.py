@@ -25,7 +25,12 @@ DB_PATH = APP_CONFIG["db_path"]
 def index() -> str:
     devices = get_all_devices(DB_PATH)
     stats = get_summary_stats(DB_PATH)
-    return render_template("index.html", devices=devices, stats=stats)
+    return render_template(
+        "index.html",
+        devices=devices,
+        stats=stats,
+        current_page="overview",
+    )
 
 
 @app.route("/device/<int:device_id>")
@@ -43,6 +48,7 @@ def device_detail(device_id: int) -> str:
         dns_logs=dns_logs,
         sessions=sessions,
         status_history=status_history,
+        current_page="network",
     )
 
 
@@ -61,6 +67,7 @@ def report() -> str:
         stats=stats,
         all_sessions=all_sessions,
         generated_at=generated_at,
+        current_page="report",
     )
 
 

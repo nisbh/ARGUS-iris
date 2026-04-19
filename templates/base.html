@@ -1,24 +1,31 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}ARGUS-IRIS{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ARGUS{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
     {% block head_extra %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
-    {% block top_nav %}
-    <nav class="top-nav" aria-label="Primary">
-        <a href="{{ url_for('index') }}" class="{% if request.path == url_for('index') %}active{% endif %}">Overview</a>
-        <a href="{{ url_for('report') }}" class="{% if request.path == url_for('report') %}active{% endif %}">Report</a>
-    </nav>
-    {% endblock %}
+    <header class="header">
+        <div>
+            <div class="header-title">ARGUS</div>
+            <div class="header-subtitle">Network Intelligence Framework</div>
+        </div>
+        <nav class="nav" aria-label="Primary">
+            <a href="{{ url_for('index') }}" class="{% if current_page == 'overview' %}nav-active{% endif %}">Overview</a>
+            <a href="{{ url_for('index') }}" class="{% if current_page == 'network' %}nav-active{% endif %}">Network</a>
+            <a href="{{ url_for('report') }}#flagged-domains" class="{% if current_page == 'sni' %}nav-active{% endif %}">SNI</a>
+            <a href="{{ url_for('report') }}" class="{% if current_page == 'report' %}nav-active{% endif %}">Report</a>
+            <a href="{{ url_for('report') }}#methodology" class="{% if current_page == 'about' %}nav-active{% endif %}">About</a>
+        </nav>
+    </header>
 
-    <main class="page-content">
+    <main class="content">
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="site-footer">ARGUS Network Intelligence Framework &mdash; Local Use Only</footer>
+    <footer class="footer">ARGUS &mdash; Local Use Only  |  Authorised Testing Only</footer>
 </body>
 </html>
