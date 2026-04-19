@@ -11,6 +11,7 @@ from db import (
     get_dns_logs,
     get_flagged_domains,
     get_sessions,
+    get_status_history,
     get_summary_stats,
 )
 
@@ -35,11 +36,13 @@ def device_detail(device_id: int) -> str:
 
     dns_logs = get_dns_logs(DB_PATH, device_id)
     sessions = get_sessions(DB_PATH, device_id)
+    status_history = get_status_history(DB_PATH, device_id)
     return render_template(
         "device.html",
         device=device,
         dns_logs=dns_logs,
         sessions=sessions,
+        status_history=status_history,
     )
 
 

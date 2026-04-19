@@ -89,5 +89,36 @@
     {% else %}
     <p class="empty-state">No sessions recorded for this device.</p>
     {% endif %}
+
+    <h2>Status History</h2>
+    {% if status_history %}
+    <table>
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in status_history %}
+            <tr>
+                <td>
+                    {% set status_value = (entry.status or "UNKNOWN")|upper %}
+                    {% if status_value == "ACTIVE" %}
+                    <span class="status-active">ACTIVE</span>
+                    {% elif status_value == "STALE" %}
+                    <span class="status-stale">STALE</span>
+                    {% else %}
+                    <span class="status-unknown">UNKNOWN</span>
+                    {% endif %}
+                </td>
+                <td>{{ entry.timestamp }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No status changes recorded for this device.</p>
+    {% endif %}
 </section>
 {% endblock %}

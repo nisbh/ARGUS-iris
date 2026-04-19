@@ -104,6 +104,19 @@ def get_sessions(db_path: str, device_id: int) -> List[Dict[str, Any]]:
         return _rows_to_dicts(rows)
 
 
+def get_status_history(db_path: str, device_id: int) -> List[Dict[str, Any]]:
+    query = (
+        "SELECT status, timestamp "
+        "FROM status_log WHERE device_id = ? ORDER BY timestamp DESC LIMIT 50"
+    )
+    with _connect(db_path) as connection:
+        try:
+            rows = connection.execute(query, (device_id,)).fetchall()
+        except sqlite3.OperationalError:
+            return []
+        return _rows_to_dicts(rows)
+
+
 def get_flagged_domains(db_path: str) -> List[Dict[str, Any]]:
     query = (
         "SELECT dns_logs.domain, dns_logs.timestamp, devices.ip, devices.mac "

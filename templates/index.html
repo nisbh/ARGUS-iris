@@ -2,6 +2,10 @@
 
 {% block title %}ARGUS-IRIS &mdash; Device Overview{% endblock %}
 
+{% block head_extra %}
+<meta http-equiv="refresh" content="30">
+{% endblock %}
+
 {% block content %}
 <section>
     <h1>ARGUS-IRIS Device Overview</h1>
@@ -26,6 +30,9 @@
     </div>
 
     {% if devices %}
+    <p class="empty-state" style="font-size: 0.85rem; margin-bottom: 0.6rem;">
+        Auto-refreshing every 30 seconds &mdash; <a href="/">refresh now</a>
+    </p>
     <table>
         <thead>
             <tr>
