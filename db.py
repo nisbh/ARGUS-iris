@@ -51,6 +51,60 @@ def get_all_devices(db_path: str) -> List[Dict[str, Any]]:
         return _rows_to_dicts(rows)
 
 
+def get_overview_devices(
+    db_path: str,
+    sort_column: str = "last_seen",
+    sort_order: str = "DESC",
+) -> List[Dict[str, Any]]:
+    allowed_sort_columns = {
+        "ip": "ip",
+        "vendor": "vendor",
+        "status": "status",
+        "last_seen": "last_seen",
+    }
+    safe_column = allowed_sort_columns.get(sort_column, "last_seen")
+    safe_order = "ASC" if sort_order.upper() == "ASC" else "DESC"
+
+    with _connect(db_path) as connection:
+        has_status, has_os_guess = _devices_has_optional_columns(connection)
+
+        if has_status and has_os_guess:
+            query = (
+                "SELECT id, ip, mac, vendor, first_seen, last_seen, status, os_guess "
+                f"FROM devices ORDER BY {safe_column} {safe_order}"
+            )
+            params: Tuple[Any, ...] = ()
+        elif not has_status and has_os_guess:
+            query = (
+                "SELECT id, ip, mac, vendor, first_seen, last_seen, ? AS status, os_guess "
+                f"FROM devices ORDER BY {safe_column} {safe_order}"
+            )
+            params = ("UNKNOWN",)
+        elif has_status and not has_os_guess:
+            query = (
+                "SELECT id, ip, mac, vendor, first_seen, last_seen, status, ? AS os_guess "
+                f"FROM devices ORDER BY {safe_column} {safe_order}"
+            )
+            params = ("Unknown",)
+        else:
+            query = (
+                "SELECT id, ip, mac, vendor, first_seen, last_seen, ? AS status, ? AS os_guess "
+                f"FROM devices ORDER BY {safe_column} {safe_order}"
+            )
+            params = ("UNKNOWN", "Unknown")
+
+        rows = connection.execute(query, params).fetchall()
+        return _rows_to_dicts(rows)
+
+
+def get_latest_device_seen(db_path: str) -> Optional[str]:
+    with _connect(db_path) as connection:
+        row = connection.execute("SELECT MAX(last_seen) AS latest FROM devices").fetchone()
+        if row is None:
+            return None
+        return row["latest"]
+
+
 def get_device(db_path: str, device_id: int) -> Optional[Dict[str, Any]]:
     with _connect(db_path) as connection:
         has_status, has_os_guess = _devices_has_optional_columns(connection)
@@ -88,6 +142,20 @@ def get_dns_logs(db_path: str, device_id: int) -> List[Dict[str, Any]]:
     query = (
         "SELECT id, domain, timestamp, flagged "
         "FROM dns_logs WHERE device_id = ? ORDER BY timestamp DESC"
+    )
+    with _connect(db_path) as connection:
+        rows = connection.execute(query, (device_id,)).fetchall()
+        return _rows_to_dicts(rows)
+
+
+def get_dns_top_domains(db_path: str, device_id: int) -> List[Dict[str, Any]]:
+    query = (
+        "SELECT domain, COUNT(*) AS cnt "
+        "FROM dns_logs "
+        "WHERE device_id = ? "
+        "GROUP BY domain "
+        "ORDER BY cnt DESC, domain ASC "
+        "LIMIT 5"
     )
     with _connect(db_path) as connection:
         rows = connection.execute(query, (device_id,)).fetchall()
@@ -178,3 +246,91 @@ def get_summary_stats(db_path: str) -> Dict[str, int]:
         "flagged_count": flagged_count,
         "total_sessions": total_sessions,
     }
+
+
+def get_sni_logs(db_path: str) -> List[Dict[str, Any]]:
+    query = (
+        "SELECT src_ip, hostname, timestamp "
+        "FROM sni_logs "
+        "ORDER BY timestamp DESC"
+    )
+    with _connect(db_path) as connection:
+        try:
+            rows = connection.execute(query).fetchall()
+        except sqlite3.OperationalError:
+            return []
+        return _rows_to_dicts(rows)
+
+
+def get_sni_summary(db_path: str) -> List[Dict[str, Any]]:
+    query = (
+        "SELECT src_ip, COUNT(DISTINCT hostname) AS unique_hosts, COUNT(*) AS total "
+        "FROM sni_logs "
+        "GROUP BY src_ip "
+        "ORDER BY total DESC"
+    )
+    with _connect(db_path) as connection:
+        try:
+            rows = connection.execute(query).fetchall()
+        except sqlite3.OperationalError:
+            return []
+        return _rows_to_dicts(rows)
+
+
+def get_vendor_distribution(db_path: str) -> List[Dict[str, Any]]:
+    query = (
+        "SELECT COALESCE(NULLIF(vendor, ''), 'Unknown') AS vendor, COUNT(*) AS cnt "
+        "FROM devices "
+        "GROUP BY COALESCE(NULLIF(vendor, ''), 'Unknown') "
+        "ORDER BY cnt DESC"
+    )
+    with _connect(db_path) as connection:
+        rows = connection.execute(query).fetchall()
+        return _rows_to_dicts(rows)
+
+
+def get_mac_randomisation_stats(db_path: str) -> Dict[str, Any]:
+    with _connect(db_path) as connection:
+        total_row = connection.execute("SELECT COUNT(*) AS count FROM devices").fetchone()
+        randomised_row = connection.execute(
+            "SELECT COUNT(*) AS count FROM devices WHERE vendor = ?",
+            ("Unknown (randomised MAC)",),
+        ).fetchone()
+
+        total = int(total_row["count"]) if total_row else 0
+        randomised = int(randomised_row["count"]) if randomised_row else 0
+        real = total - randomised
+        rate = round((randomised / total) * 100, 1) if total > 0 else 0
+
+    return {
+        "total": total,
+        "randomised": randomised,
+        "real": real,
+        "rate": rate,
+    }
+
+
+def get_top_dns_devices(db_path: str) -> List[Dict[str, Any]]:
+    query = (
+        "SELECT devices.ip, COUNT(dns_logs.id) AS query_count "
+        "FROM dns_logs "
+        "JOIN devices ON dns_logs.device_id = devices.id "
+        "GROUP BY devices.id "
+        "ORDER BY query_count DESC "
+        "LIMIT 10"
+    )
+    with _connect(db_path) as connection:
+        rows = connection.execute(query).fetchall()
+        return _rows_to_dicts(rows)
+
+
+def get_persistent_devices(db_path: str) -> List[Dict[str, Any]]:
+    query = (
+        "SELECT ip, mac, vendor, first_seen, last_seen "
+        "FROM devices "
+        "WHERE first_seen != last_seen "
+        "ORDER BY first_seen ASC"
+    )
+    with _connect(db_path) as connection:
+        rows = connection.execute(query).fetchall()
+        return _rows_to_dicts(rows)

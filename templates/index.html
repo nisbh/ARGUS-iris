@@ -1,75 +1,110 @@
 {% extends "base.html" %}
 
-{% block title %}ARGUS-IRIS &mdash; Device Overview{% endblock %}
+{% block title %}ARGUS &mdash; Overview{% endblock %}
 
 {% block head_extra %}
 <meta http-equiv="refresh" content="30">
 {% endblock %}
 
 {% block content %}
-<section>
-    <h1>ARGUS-IRIS Device Overview</h1>
-
-    <div class="summary-bar">
-        <article class="stat-card">
-            <h2>Total Devices</h2>
-            <p>{{ stats.total_devices }}</p>
-        </article>
-        <article class="stat-card">
-            <h2>Active Devices</h2>
-            <p>{{ stats.active_devices }}</p>
-        </article>
-        <article class="stat-card">
-            <h2>Total DNS Logs</h2>
-            <p>{{ stats.total_dns_logs }}</p>
-        </article>
-        <article class="stat-card">
-            <h2>Flagged Domains</h2>
-            <p>{{ stats.flagged_count }}</p>
-        </article>
+<section class="card">
+    <div class="stat-row">
+        <div class="stat-card">
+            <div class="stat-label">Total Devices</div>
+            <div class="stat-number">{{ stats.total_devices }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Active</div>
+            <div class="stat-number">{{ stats.active_devices }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total DNS Queries</div>
+            <div class="stat-number">{{ stats.total_dns_logs }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Flagged Domains</div>
+            <div class="stat-number">{{ stats.flagged_count }}</div>
+        </div>
     </div>
-
-    {% if devices %}
-    <p class="empty-state" style="font-size: 0.85rem; margin-bottom: 0.6rem;">
-        Auto-refreshing every 30 seconds &mdash; <a href="/">refresh now</a>
+    <p class="muted">
+        <small>
+            <span class="pulse-dot {{ 'fresh' if is_fresh else '' }}"></span>
+            Auto-refreshing every 30 seconds
+        </small>
     </p>
-    <table>
-        <thead>
-            <tr>
-                <th>IP</th>
-                <th>MAC</th>
-                <th>Vendor</th>
-                <th>OS Guess</th>
-                <th>Status</th>
-                <th>First Seen</th>
-                <th>Last Seen</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for device in devices %}
-            <tr>
-                <td><a href="{{ url_for('device_detail', device_id=device.id) }}">{{ device.ip }}</a></td>
-                <td>{{ device.mac }}</td>
-                <td>{{ device.vendor }}</td>
-                <td>{{ device.os_guess }}</td>
-                <td>
-                    {% set status_value = (device.status or "UNKNOWN")|upper %}
-                    {% if status_value == "ACTIVE" %}
-                    <span class="status-active">ACTIVE</span>
-                    {% elif status_value == "STALE" %}
-                    <span class="status-stale">STALE</span>
-                    {% else %}
-                    <span class="status-unknown">UNKNOWN</span>
-                    {% endif %}
-                </td>
-                <td>{{ device.first_seen }}</td>
-                <td>{{ device.last_seen }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p class="empty-state">No devices found in database.</p>
-    {% endif %}
+</section>
+
+<section class="card">
+    <div class="section-title">Discovered Devices</div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="sortable-header">
+                        <a href="{{ url_for('index', sort='ip', order='desc' if sort == 'ip' and order == 'asc' else 'asc') }}">
+                            IP
+                            {% if sort == 'ip' %}
+                            <span class="sort-indicator">{{ '^' if order == 'asc' else 'v' }}</span>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>MAC</th>
+                    <th class="sortable-header">
+                        <a href="{{ url_for('index', sort='vendor', order='desc' if sort == 'vendor' and order == 'asc' else 'asc') }}">
+                            Vendor
+                            {% if sort == 'vendor' %}
+                            <span class="sort-indicator">{{ '^' if order == 'asc' else 'v' }}</span>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>OS Guess</th>
+                    <th class="sortable-header">
+                        <a href="{{ url_for('index', sort='status', order='desc' if sort == 'status' and order == 'asc' else 'asc') }}">
+                            Status
+                            {% if sort == 'status' %}
+                            <span class="sort-indicator">{{ '^' if order == 'asc' else 'v' }}</span>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>First Seen</th>
+                    <th class="sortable-header">
+                        <a href="{{ url_for('index', sort='last_seen', order='desc' if sort == 'last_seen' and order == 'asc' else 'asc') }}">
+                            Last Seen
+                            {% if sort == 'last_seen' %}
+                            <span class="sort-indicator">{{ '^' if order == 'asc' else 'v' }}</span>
+                            {% endif %}
+                        </a>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if devices %}
+                {% for device in devices %}
+                {% set status_value = (device.status or "UNKNOWN")|upper %}
+                {% if status_value == "ACTIVE" %}
+                {% set status_badge = "badge-active" %}
+                {% elif status_value == "STALE" %}
+                {% set status_badge = "badge-stale" %}
+                {% else %}
+                {% set status_badge = "badge-unknown" %}
+                {% endif %}
+                <tr>
+                    <td><a href="{{ url_for('device_detail', device_id=device.id) }}">{{ device.ip }}</a></td>
+                    <td>{{ device.mac }}</td>
+                    <td>{{ device.vendor }}</td>
+                    <td>{{ device.os_guess }}</td>
+                    <td><span class="badge {{ status_badge }}">{{ status_value }}</span></td>
+                    <td>{{ device.first_seen }}</td>
+                    <td>{{ device.last_seen }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="7" class="muted">No devices found in database.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
 </section>
 {% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}ARGUS &mdash; Network Summary{% endblock %}
+
+{% block content %}
+<section class="card">
+    <div class="section-title">MAC Randomisation</div>
+    <div class="stat-row">
+        <div class="stat-card">
+            <div class="stat-label">Total Devices</div>
+            <div class="stat-number">{{ mac_stats.total }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Randomised</div>
+            <div class="stat-number">{{ mac_stats.randomised }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Real MACs</div>
+            <div class="stat-number">{{ mac_stats.real }}</div>
+        </div>
+    </div>
+    <p class="muted">Randomisation rate: {{ mac_stats.rate }}%</p>
+</section>
+
+<section class="card">
+    <div class="section-title">Vendor Distribution</div>
+    {% if vendor_distribution %}
+    {% for row in vendor_distribution %}
+    <div class="bar-row">
+        <div class="bar-label">{{ row.vendor }}</div>
+        <div class="bar-track"><div class="bar-fill {{ row.bar_class }}"></div></div>
+        <div class="bar-count">{{ row.cnt }}</div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="muted">No vendor distribution data recorded.</p>
+    {% endif %}
+</section>
+
+<section class="card">
+    <div class="section-title">Top Devices by DNS Queries</div>
+    {% if top_dns_devices %}
+    {% for row in top_dns_devices %}
+    <div class="bar-row">
+        <div class="bar-label">{{ row.ip }}</div>
+        <div class="bar-track"><div class="bar-fill {{ row.bar_class }}"></div></div>
+        <div class="bar-count">{{ row.query_count }}</div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="muted">No DNS activity data recorded.</p>
+    {% endif %}
+</section>
+
+<section class="card">
+    <div class="section-title">Persistent Devices</div>
+    <p class="muted">Devices observed across multiple scan sessions.</p>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>IP</th>
+                    <th>MAC</th>
+                    <th>Vendor</th>
+                    <th>First Seen</th>
+                    <th>Last Seen</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if persistent_devices %}
+                {% for row in persistent_devices %}
+                <tr>
+                    <td>{{ row.ip }}</td>
+                    <td>{{ row.mac }}</td>
+                    <td>{{ row.vendor }}</td>
+                    <td>{{ row.first_seen }}</td>
+                    <td>{{ row.last_seen }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="5" class="muted">No persistent devices recorded.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

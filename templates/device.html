@@ -1,124 +1,144 @@
 {% extends "base.html" %}
 
-{% block title %}ARGUS-IRIS &mdash; Device {{ device.ip }}{% endblock %}
+{% block title %}ARGUS &mdash; {{ device.ip }}{% endblock %}
 
 {% block content %}
-<section>
-    <p><a href="{{ url_for('index') }}">Back to Overview</a></p>
-    <h1>Device {{ device.ip }}</h1>
+<p><a href="{{ url_for('index') }}">&lt; Back to Overview</a></p>
+<h2>{{ device.ip }} <span class="muted">{{ device.mac }}</span></h2>
 
-    <h2>Device Info</h2>
-    <table>
-        <tbody>
-            <tr><th>IP</th><td>{{ device.ip }}</td></tr>
-            <tr><th>MAC</th><td>{{ device.mac }}</td></tr>
-            <tr><th>Vendor</th><td>{{ device.vendor }}</td></tr>
-            <tr><th>OS Guess</th><td>{{ device.os_guess }}</td></tr>
-            <tr>
-                <th>Status</th>
-                <td>
-                    {% set status_value = (device.status or "UNKNOWN")|upper %}
-                    {% if status_value == "ACTIVE" %}
-                    <span class="status-active">ACTIVE</span>
-                    {% elif status_value == "STALE" %}
-                    <span class="status-stale">STALE</span>
-                    {% else %}
-                    <span class="status-unknown">UNKNOWN</span>
-                    {% endif %}
-                </td>
-            </tr>
-            <tr><th>First Seen</th><td>{{ device.first_seen }}</td></tr>
-            <tr><th>Last Seen</th><td>{{ device.last_seen }}</td></tr>
-        </tbody>
-    </table>
+{% set status_value = (device.status or "UNKNOWN")|upper %}
+{% if status_value == "ACTIVE" %}
+{% set status_badge = "badge-active" %}
+{% elif status_value == "STALE" %}
+{% set status_badge = "badge-stale" %}
+{% else %}
+{% set status_badge = "badge-unknown" %}
+{% endif %}
 
-    <h2>DNS Log</h2>
-    {% if dns_logs %}
-    <table>
-        <thead>
-            <tr>
-                <th>Domain</th>
-                <th>Timestamp</th>
-                <th>Flagged</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for entry in dns_logs %}
-            <tr>
-                <td>{{ entry.domain }}</td>
-                <td>{{ entry.timestamp }}</td>
-                <td>
-                    {% if entry.flagged == 1 %}
-                    <span class="flag-yes">FLAGGED</span>
-                    {% else %}
-                    <span class="flag-no">Clean</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<section class="card">
+    <div class="section-title">Device Information</div>
+    <div class="table-container">
+        <table>
+            <tbody>
+                <tr><td class="muted">IP Address</td><td>{{ device.ip }}</td></tr>
+                <tr><td class="muted">MAC Address</td><td>{{ device.mac }}</td></tr>
+                <tr><td class="muted">Vendor</td><td>{{ device.vendor }}</td></tr>
+                <tr><td class="muted">OS Guess</td><td>{{ device.os_guess }}</td></tr>
+                <tr><td class="muted">Status</td><td><span class="badge {{ status_badge }}">{{ status_value }}</span></td></tr>
+                <tr><td class="muted">First Seen</td><td>{{ device.first_seen }}</td></tr>
+                <tr><td class="muted">Last Seen</td><td>{{ device.last_seen }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card">
+    <div class="section-title">DNS Log</div>
+
+    {% if dns_top %}
+    {% for row in dns_top %}
+    <div class="bar-row">
+        <div class="bar-label">{{ row.domain }}</div>
+        <div class="bar-track"><div class="bar-fill {{ row.bar_class }}"></div></div>
+        <div class="bar-count">{{ row.cnt }}</div>
+    </div>
+    {% endfor %}
     {% else %}
-    <p class="empty-state">No DNS logs recorded for this device.</p>
+    <p class="muted">No DNS activity recorded.</p>
     {% endif %}
 
-    <h2>Sessions</h2>
-    {% if sessions %}
-    <table>
-        <thead>
-            <tr>
-                <th>Start Time</th>
-                <th>End Time</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for session in sessions %}
-            <tr>
-                <td>{{ session.start_time }}</td>
-                <td>
-                    {% if not session.end_time %}
-                    <em>Ongoing</em>
-                    {% else %}
-                    {{ session.end_time }}
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p class="empty-state">No sessions recorded for this device.</p>
-    {% endif %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Domain</th>
+                    <th>Timestamp</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if dns_logs %}
+                {% for entry in dns_logs %}
+                <tr>
+                    <td>{{ entry.domain }}</td>
+                    <td>{{ entry.timestamp }}</td>
+                    <td>
+                        {% if entry.flagged == 1 %}
+                        <span class="tag-flagged">FLAGGED</span>
+                        {% else %}
+                        <span class="tag-clean">CLEAN</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="3" class="muted">No DNS logs recorded for this device.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</section>
 
-    <h2>Status History</h2>
+<section class="card">
+    <div class="section-title">Status History</div>
     {% if status_history %}
-    <table>
-        <thead>
-            <tr>
-                <th>Status</th>
-                <th>Timestamp</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for entry in status_history %}
-            <tr>
-                <td>
-                    {% set status_value = (entry.status or "UNKNOWN")|upper %}
-                    {% if status_value == "ACTIVE" %}
-                    <span class="status-active">ACTIVE</span>
-                    {% elif status_value == "STALE" %}
-                    <span class="status-stale">STALE</span>
-                    {% else %}
-                    <span class="status-unknown">UNKNOWN</span>
-                    {% endif %}
-                </td>
-                <td>{{ entry.timestamp }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <ul class="timeline">
+        {% for entry in status_history %}
+        {% set history_status = (entry.status or "UNKNOWN")|upper %}
+        {% if history_status == "ACTIVE" %}
+        {% set dot_class = "timeline-dot-active" %}
+        {% elif history_status == "STALE" %}
+        {% set dot_class = "timeline-dot-stale" %}
+        {% else %}
+        {% set dot_class = "timeline-dot-unknown" %}
+        {% endif %}
+        <li class="timeline-item">
+            <span class="timeline-dot {{ dot_class }}"></span>
+            <div>
+                <span>{{ history_status }}</span>
+                <span class="muted">{{ entry.timestamp }}</span>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
     {% else %}
-    <p class="empty-state">No status changes recorded for this device.</p>
+    <p class="muted">No status changes recorded for this device.</p>
     {% endif %}
+</section>
+
+<section class="card">
+    <div class="section-title">Sessions</div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if sessions %}
+                {% for session in sessions %}
+                <tr>
+                    <td>{{ session.start_time }}</td>
+                    <td>
+                        {% if not session.end_time %}
+                        <span class="muted"><em>Ongoing</em></span>
+                        {% else %}
+                        {{ session.end_time }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="2" class="muted">No sessions recorded for this device.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
 </section>
 {% endblock %}

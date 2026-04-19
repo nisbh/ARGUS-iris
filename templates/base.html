@@ -15,10 +15,10 @@
         </div>
         <nav class="nav" aria-label="Primary">
             <a href="{{ url_for('index') }}" class="{% if current_page == 'overview' %}nav-active{% endif %}">Overview</a>
-            <a href="{{ url_for('index') }}" class="{% if current_page == 'network' %}nav-active{% endif %}">Network</a>
-            <a href="{{ url_for('report') }}#flagged-domains" class="{% if current_page == 'sni' %}nav-active{% endif %}">SNI</a>
+            <a href="{{ url_for('network') }}" class="{% if current_page == 'network' %}nav-active{% endif %}">Network</a>
+            <a href="{{ url_for('sni') }}" class="{% if current_page == 'sni' %}nav-active{% endif %}">SNI</a>
             <a href="{{ url_for('report') }}" class="{% if current_page == 'report' %}nav-active{% endif %}">Report</a>
-            <a href="{{ url_for('report') }}#methodology" class="{% if current_page == 'about' %}nav-active{% endif %}">About</a>
+            <a href="{{ url_for('about') }}" class="{% if current_page == 'about' %}nav-active{% endif %}">About</a>
         </nav>
     </header>
 

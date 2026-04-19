@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}ARGUS &mdash; SNI Log{% endblock %}
+
+{% block content %}
+<section class="card">
+    <div class="section-title">Per-Device Summary</div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Device IP</th>
+                    <th>Unique Hostnames</th>
+                    <th>Total Captures</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if sni_summary %}
+                {% for row in sni_summary %}
+                <tr>
+                    <td>{{ row.src_ip }}</td>
+                    <td>{{ row.unique_hosts }}</td>
+                    <td>{{ row.total }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="3" class="muted">No SNI data recorded.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card">
+    <div class="section-title">SNI Capture Log</div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Device IP</th>
+                    <th>Hostname</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if sni_logs %}
+                {% for row in sni_logs %}
+                <tr>
+                    <td>{{ row.src_ip }}</td>
+                    <td>{{ row.hostname }}</td>
+                    <td>{{ row.timestamp }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="3" class="muted">No SNI data recorded.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

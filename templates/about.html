@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}ARGUS &mdash; About{% endblock %}
+
+{% block content %}
+<section class="about-section">
+    <h2>About ARGUS</h2>
+    <p>
+        ARGUS is a modular network intelligence framework built for authorised network reconnaissance and
+        traffic analysis. It is designed as a learning tool for understanding how networks operate at a low
+        level, and for demonstrating common network security concepts in a controlled environment.
+        All testing was performed with written authorisation from the college IT department.
+    </p>
+</section>
+
+<section class="about-section">
+    <h2>Modules</h2>
+    <p>
+        <strong>argus-recon:</strong>
+        Performs ARP-based host discovery across a subnet using Scapy.
+        Identifies active devices, resolves vendors from MAC OUI prefixes,
+        probes liveness via ICMP, and estimates OS from TTL values.
+        Writes results to a shared SQLite database.
+    </p>
+    <p>
+        <strong>argus-veil:</strong>
+        Performs bidirectional ARP poisoning to position the testing machine
+        as a man-in-the-middle between a target and the gateway.
+        Enables IP forwarding during the session and restores correct ARP
+        entries on exit. Records session start and end times to the database.
+        Note: Dynamic ARP Inspection (DAI) on managed switches will block
+        this module. On the college network, DAI was confirmed active via
+        ARP cache verification.
+    </p>
+    <p>
+        <strong>argus-oracle:</strong>
+        Sniffs DNS traffic on the specified interface using Scapy.
+        Logs all observed queries to the database, flags domains matching
+        a configurable blocklist, deduplicates by source IP and domain,
+        and captures TLS SNI hostnames from HTTPS handshakes independently
+        of DNS resolution.
+    </p>
+    <p>
+        <strong>argus-iris:</strong>
+        This dashboard. Reads from the shared database and presents device
+        inventory, DNS logs, SNI captures, session history, and status
+        timelines. Generates a plain text disclosure report for submission.
+    </p>
+</section>
+
+<section class="about-section">
+    <h2>How to Use</h2>
+    <ol>
+        <li>Ensure config.json is present in each module directory with correct interface, gateway_ip, subnet, and db_path values.</li>
+        <li>Run argus-recon with sudo to populate the device inventory.</li>
+        <li>Run argus-oracle with sudo to begin DNS and SNI capture. Leave it running while other modules operate.</li>
+        <li>Run argus-veil with sudo to attempt traffic interception. Select a target device by number from the displayed list. Stop with Ctrl+C - ARP tables are restored automatically.</li>
+        <li>Run argus-iris without sudo to view the dashboard at localhost:5000.</li>
+        <li>Navigate to /report and run report.py to generate the disclosure report.</li>
+    </ol>
+</section>
+
+<section class="about-section">
+    <h2>Security and Impact</h2>
+    <p>
+        ARP poisoning demonstrates how devices on a flat Layer 2 network implicitly
+        trust ARP replies, making them vulnerable to traffic interception without
+        any authentication. DNS logging reveals the destinations of all unencrypted
+        queries, while SNI capture extends visibility to HTTPS traffic destinations
+        without decrypting content.
+        On the college network, the Ruckus wireless controller enforces Dynamic ARP
+        Inspection, which validates ARP replies against a trusted binding table and
+        drops spoofed packets. This successfully prevented argus-veil from intercepting
+        traffic, demonstrating the effectiveness of DAI as a Layer 2 defence.
+        MAC address randomisation, enabled by default on modern operating systems,
+        significantly limits the effectiveness of vendor identification and device
+        tracking across sessions.
+    </p>
+</section>
+
+<section class="about-section">
+    <h2>Future Scope</h2>
+    <ul>
+        <li>Encrypted Client Hello (ECH) detection - identify when SNI is encrypted and log the attempt without hostname extraction.</li>
+        <li>Passive OS fingerprinting via TCP/IP stack characteristics (TTL, window size, options) for more reliable OS identification than ICMP TTL alone.</li>
+        <li>argus-veil multi-target mode - poison multiple devices simultaneously using threads, with per-target session tracking.</li>
+        <li>PCAP export from argus-veil - write intercepted traffic to disk during MITM sessions for offline analysis in Wireshark.</li>
+        <li>VLAN-aware scanning - detect and report when devices are isolated across VLANs, which limits ARP broadcast domain reach.</li>
+        <li>argus-iris export routes - download device inventory and DNS logs as CSV directly from the dashboard.</li>
+    </ul>
+</section>
+
+<section class="about-section">
+    <h2>Built With</h2>
+    <p>Python 3.13, Scapy, Flask, SQLite. No cloud, no containers, no frameworks beyond what is listed. Developed on Fedora 42.</p>
+</section>
+{% endblock %}
